@@ -10,7 +10,7 @@ Este proyecto implementa las tres fases más importante de un compilador para un
 |------|---------|-----------------|
 | Léxico | `lexer.py` | Convierte el código fuente en tokens |
 | Sintáctico | `parser.py` | Valida la estructura gramatical y construye el AST |
-| Semántico | `semantic.py` | Valida variables, evalúa expresiones y gestiona la tabla de símbolos |
+| Semántico | `semantica.py` | Valida variables, evalúa expresiones y gestiona la tabla de símbolos |
 
 La gramática fue diseñada formalmente como **LL(1)**: sin ambigüedad, sin recursión por la izquierda y sin factores comunes, lo que permite un análisis determinista con un solo token de anticipación.
 
@@ -20,10 +20,10 @@ La gramática fue diseñada formalmente como **LL(1)**: sin ambigüedad, sin rec
 
 ```
 gramatica_ll1/
-├── grammar.py      # Gramática formal + conjuntos FIRST, FOLLOW y tabla de predicción
+├── gramatica.py    # Gramática + conjuntos PRIMEROS, SIGUIENTES y tabla de predicción
 ├── lexer.py        # Analizador léxico (tokenizador)
 ├── parser.py       # Parser LL(1) descendente recursivo + nodos del AST
-├── semantic.py     # Analizador semántico + evaluador numérico
+├── semantica.py     # Analizador semántico + evaluador numérico
 ├── programa.txt    # Código fuente de prueba
 └── main.py         # Coordinador principal (entrada del sistema)
 ```
