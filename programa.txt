@@ -1,0 +1,9 @@
+x = 10;
+y = 3;
+z = x + y * 2;
+resultado = abs(-5) + sin(90);
+angulo = cos(0) + tan(45);
+r = (x - y) % 4;
+w = x / y;
+sin(30) + cos(60);
+abs(-100) * 2;
