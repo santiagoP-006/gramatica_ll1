@@ -1,10 +1,6 @@
 # Gramática LL(1) — Expresiones Matemáticas con Variables
 
----
-
 ## Descripción
-
-Este proyecto implementa las tres fases más importante de un compilador para un lenguaje diseñado desde cero:
 
 | Fase | Archivo | Responsabilidad |
 |------|---------|-----------------|
@@ -12,7 +8,7 @@ Este proyecto implementa las tres fases más importante de un compilador para un
 | Sintáctico | `parser.py` | Valida la estructura gramatical y construye el AST |
 | Semántico | `semantica.py` | Valida variables, evalúa expresiones y gestiona la tabla de símbolos |
 
-La gramática fue diseñada formalmente como **LL(1)**: sin ambigüedad, sin recursión por la izquierda y sin factores comunes, lo que permite un análisis determinista con un solo token de anticipación.
+La gramática fue diseñada como **LL(1)**: sin ambigüedad, sin recursión por la izquierda y sin factores comunes, lo que permite un análisis determinista con un solo token de anticipación.
 
 ---
 
@@ -81,11 +77,11 @@ factor    → ( expr )
 
 ---
 
-## Conjuntos formales
+## Conjuntos
 
-### FIRST
+### PRIMEROS
 
-| No-terminal | FIRST |
+| No-terminal | PRIMEROS |
 |-------------|-------|
 | `programa` | ID, NUM, MINUS, ABS, SIN, COS, TAN, LPAREN, ε |
 | `sentencia` | ID, NUM, MINUS, ABS, SIN, COS, TAN, LPAREN |
@@ -95,9 +91,9 @@ factor    → ( expr )
 | `term'` | MULT, DIV, MOD, ε |
 | `factor` | LPAREN, MINUS, ABS, SIN, COS, TAN, NUM, ID |
 
-### FOLLOW
+### SIGUIENTES
 
-| No-terminal | FOLLOW |
+| No-terminal | SIGUIENTES |
 |-------------|--------|
 | `programa` | $ |
 | `sentencia` | ID, NUM, MINUS, ABS, SIN, COS, TAN, LPAREN, $ |
@@ -107,7 +103,7 @@ factor    → ( expr )
 | `term'` | PLUS, MINUS, SEMICOLON, RPAREN, $ |
 | `factor` | MULT, DIV, MOD, PLUS, MINUS, SEMICOLON, RPAREN, $ |
 
-> **Verificación LL(1):** ningún par de producciones del mismo no-terminal comparte elementos en sus conjuntos de predicción → la gramática **es LL(1)** ✓
+> **Verificación LL(1):** ningún par de producciones del mismo no-terminal comparte elementos en sus conjuntos de predicción, entonces la gramática **es LL(1)** 
 
 ### Tabla de predicción (fragmento)
 
