@@ -37,7 +37,7 @@ def main():
         print(f"    {i:>2}: {line}")
 
     # ── 2. Conjuntos formales ──────────────────────────────────
-    print_banner("CONJUNTOS FIRST, FOLLOW Y PREDICCIÓN")
+    print_banner("CONJUNTOS PRIMEROS, SIGUIENTES Y PREDICCIÓN")
     print_sets()
 
     # ── 3. Análisis léxico ─────────────────────────────────────
