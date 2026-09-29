@@ -6,8 +6,8 @@
 import sys
 from lexer    import tokenize, LexerError
 from parser   import Parser, ParseError, ProgramNode
-from semantic import SemanticAnalyzer, SemanticError
-from grammar  import print_sets
+from semantica import SemanticAnalyzer, SemanticError
+from gramatica  import print_sets
 
 def print_banner(title: str):
     print()
@@ -59,7 +59,7 @@ def main():
         ast    = parser.parse()
         for i, stmt in enumerate(ast.statements, 1):
             print(f"  Sentencia {i}: {stmt}")
-        print(f"\n  Árbol AST generado correctamente ✓")
+        print(f"\n  Árbol AST generado")
     except ParseError as e:
         print(f"\n  {e}")
         sys.exit(1)
@@ -84,7 +84,7 @@ def main():
 
     print()
     print("=" * 60)
-    print("  COMPILACIÓN EXITOSA ✓")
+    print("  COMPILADO")
     print("=" * 60)
 
 if __name__ == "__main__":
