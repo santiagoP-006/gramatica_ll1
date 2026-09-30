@@ -2,18 +2,24 @@
 # Coordinador principal del compilador LL(1)
 #
 # Modo 1 — compilar un programa del lenguaje:
-#   python3 main.py [programa.txt] [--traza]
+#   python3 main.py [programa.txt] [--traza] [--gui] [--svg]
+#   --gui abre una ventana con el AST; --svg lo guarda en arbol.svg
 #   léxico → conjuntos (calculados) → sintáctico → semántico
 #
 # Modo 2 — analizar cualquier gramática (diapositivas):
 #   python3 main.py --gramatica archivo.txt ["cadena a analizar"]
 #   elimina recursión izquierda, factoriza, calcula conjuntos,
 #   verifica LL(1), muestra la tabla M y la traza de la cadena
+#
+# Modo 3 — interactivo:
+#   python3 main.py --interactivo                          (lenguaje)
+#   python3 main.py --interactivo --gramatica archivo.txt  (otra gramática)
 
 import sys
 from lexer     import tokenize, LexerError
 from parser    import Parser, ParseError
 from semantica import SemanticAnalyzer, SemanticError
+from ast_grafico import arbol_texto, guardar_svg, mostrar_ventana
 from gramatica import (GRAMMAR, INICIAL, normalizar, leer_gramatica,
                        eliminar_recursion_izquierda, factorizar, analizar,
                        imprimir_gramatica, imprimir_conjuntos, imprimir_tabla,
@@ -71,7 +77,7 @@ def modo_gramatica(ruta, cadena):
 
 
 # ── Modo 1: compilar un programa del lenguaje ─────────────────
-def modo_programa(source_file, con_traza):
+def modo_programa(source_file, con_traza, con_gui=False, con_svg=False):
     try:
         with open(source_file, "r", encoding="utf-8") as f:
             source = f.read()
@@ -116,7 +122,14 @@ def modo_programa(source_file, con_traza):
         ast    = parser.parse()
         for i, stmt in enumerate(ast.statements, 1):
             print(f"  Sentencia {i}: {stmt}")
-        print(f"\n  Árbol AST generado")
+        print(f"\n  Árbol AST generado:\n")
+        for linea in arbol_texto(ast).split("\n"):
+            print(f"    {linea}")
+        if con_svg:
+            guardar_svg(ast, "arbol.svg")
+            print("\n  Árbol guardado en arbol.svg (ábrelo con el navegador)")
+        if con_gui:
+            mostrar_ventana(ast)
     except ParseError as e:
         print(f"\n  {e}")
         sys.exit(1)
@@ -164,10 +177,9 @@ def main():
         modo_gramatica(args[1], args[2] if len(args) > 2 else None)
     else:
         archivos = [a for a in args if not a.startswith("--")]
-        modo_programa(archivos[0] if archivos else "programa.txt", "--traza" in args)
+        modo_programa(archivos[0] if archivos else "programa.txt", "--traza" in args,
+                      "--gui" in args, "--svg" in args)
 
 
-if __name__ == "__main__":
-    main()
 if __name__ == "__main__":
     main()

@@ -11,6 +11,7 @@
 from lexer     import tokenize, LexerError
 from parser    import Parser, ParseError
 from semantica import SemanticAnalyzer, SemanticError
+from ast_grafico import arbol_texto, guardar_svg, mostrar_ventana
 from gramatica import (GRAMMAR, INICIAL, normalizar, leer_gramatica,
                        eliminar_recursion_izquierda, factorizar, analizar,
                        imprimir_gramatica, imprimir_conjuntos, imprimir_tabla,
@@ -40,7 +41,9 @@ AYUDA_LENGUAJE = """
     :vars        muestra la tabla de símbolos
     :conjuntos   muestra PRIMEROS, SIGUIENTES y PREDICCIÓN
     :tokens      activa / desactiva la vista de tokens
-    :arbol       activa / desactiva la vista del AST
+    :arbol       activa / desactiva el AST dibujado en texto
+    :grafico     activa / desactiva la ventana gráfica del AST
+    :svg         guarda el AST de la última expresión en arbol.svg
     :traza       activa / desactiva la traza con la tabla M
     :borrar      elimina todas las variables
     :ayuda       muestra esta ayuda
@@ -52,7 +55,8 @@ def repl_lenguaje():
     analizador = SemanticAnalyzer()          # conserva las variables
     g = normalizar(GRAMMAR)
     tabla = analizar(g, INICIAL)["tabla"]
-    ver = {"tokens": False, "arbol": False, "traza": False}
+    ver = {"tokens": False, "arbol": False, "grafico": False, "traza": False}
+    ultimo_ast = None
 
     print("=" * 70)
     print("  MODO INTERACTIVO — lenguaje de expresiones (ángulos en grados)")
@@ -78,6 +82,12 @@ def repl_lenguaje():
                 analizador.print_symbol_table()
             elif cmd == "conjuntos":
                 print_sets()
+            elif cmd == "svg":
+                if ultimo_ast is None:
+                    print("  Todavía no hay ninguna expresión")
+                else:
+                    guardar_svg(ultimo_ast, "arbol.svg")
+                    print("  Árbol guardado en arbol.svg")
             elif cmd == "borrar":
                 analizador.symbol_table.clear()
                 print("  Variables eliminadas")
@@ -108,9 +118,12 @@ def repl_lenguaje():
         except ParseError as e:
             print(f"  {e}")
             continue
+        ultimo_ast = ast
         if ver["arbol"]:
-            for stmt in ast.statements:
-                print(f"  AST: {stmt}")
+            for linea in arbol_texto(ast).split("\n"):
+                print(f"    {linea}")
+        if ver["grafico"]:
+            mostrar_ventana(ast)
 
         # ── semántico ──
         try:
