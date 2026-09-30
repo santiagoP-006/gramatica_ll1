@@ -147,7 +147,17 @@ def modo_programa(source_file, con_traza):
 
 def main():
     args = sys.argv[1:]
-    if args and args[0] == "--gramatica":
+    if "--interactivo" in args:
+        from interactivo import repl_lenguaje, repl_gramatica
+        if "--gramatica" in args:
+            i = args.index("--gramatica")
+            if i + 1 >= len(args):
+                print("Uso: python3 main.py --interactivo --gramatica archivo.txt")
+                sys.exit(1)
+            repl_gramatica(args[i + 1])
+        else:
+            repl_lenguaje()
+    elif args and args[0] == "--gramatica":
         if len(args) < 2:
             print('Uso: python3 main.py --gramatica archivo.txt ["cadena"]')
             sys.exit(1)
@@ -157,5 +167,7 @@ def main():
         modo_programa(archivos[0] if archivos else "programa.txt", "--traza" in args)
 
 
+if __name__ == "__main__":
+    main()
 if __name__ == "__main__":
     main()
