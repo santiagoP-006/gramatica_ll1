@@ -11,6 +11,7 @@ TOKEN_SPEC = [
     ("SIN",       r'(?i:\bsin\b)'),
     ("COS",       r'(?i:\bcos\b)'),
     ("TAN",       r'(?i:\btan\b)'),
+    ("ATAN",      r'(?i:\batan\b)'),
     ("ID",        r'[a-zA-Z_]\w*'),
     ("ASIG",      r'='),
     ("PLUS",      r'\+'),
@@ -59,7 +60,7 @@ def tokenize(source_code: str) -> list:
                 f"[LÉXICO] Carácter no reconocido '{value}' en línea {line_num}"
             )
         else:
-            if kind in ("ABS", "SIN", "COS", "TAN"):
+            if kind in ("ABS", "SIN", "COS", "TAN", "ATAN"):
                 value = value.lower()          # Sin, SIN, sin -> sin
             tokens.append(Token(kind, value, line_num))
 

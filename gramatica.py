@@ -23,6 +23,7 @@ GRAMMAR = {
         ["SIN",    "LPAREN", "expr", "RPAREN", "term'", "expr'", "SEMICOLON"],
         ["COS",    "LPAREN", "expr", "RPAREN", "term'", "expr'", "SEMICOLON"],
         ["TAN",    "LPAREN", "expr", "RPAREN", "term'", "expr'", "SEMICOLON"],
+        ["ATAN",   "LPAREN", "expr", "RPAREN", "term'", "expr'", "SEMICOLON"],
         ["LPAREN", "expr", "RPAREN", "term'", "expr'", "SEMICOLON"],
     ],
     # Con ASIG es asignación; si no, es una expresión que empezó con ID
@@ -54,6 +55,7 @@ GRAMMAR = {
         ["SIN",    "LPAREN", "expr", "RPAREN"],
         ["COS",    "LPAREN", "expr", "RPAREN"],
         ["TAN",    "LPAREN", "expr", "RPAREN"],
+        ["ATAN",   "LPAREN", "expr", "RPAREN"],
         ["NUM"],
         ["ID"]
     ]

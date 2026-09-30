@@ -67,7 +67,7 @@ class Parser:
     # programa → sentencia programa | ε
     def parse_programa(self) -> ProgramNode:
         stmts = []
-        start = {"ID", "NUM", "MINUS", "ABS", "SIN", "COS", "TAN", "LPAREN"}
+        start = {"ID", "NUM", "MINUS", "ABS", "SIN", "COS", "TAN","ATAN", "LPAREN"}
         while self.current().type in start:
             stmts.append(self.parse_sentencia())
         return ProgramNode(stmts)
@@ -106,7 +106,7 @@ class Parser:
             self.consume("SEMICOLON")
             return node
 
-        elif tok.type in ("ABS", "SIN", "COS", "TAN"):
+        elif tok.type in ("ABS", "SIN", "COS", "TAN", "ATAN"):
             func = self.consume(tok.type).value
             self.consume("LPAREN")
             arg  = self.parse_expr()
@@ -200,7 +200,7 @@ class Parser:
             self.consume("MINUS")
             return UnaryOpNode("-", self.parse_factor())
 
-        elif tok.type in ("ABS", "SIN", "COS", "TAN"):
+        elif tok.type in ("ABS", "SIN", "COS", "TAN","ATAN"):
             func = self.consume(tok.type).value
             self.consume("LPAREN")
             arg  = self.parse_expr()

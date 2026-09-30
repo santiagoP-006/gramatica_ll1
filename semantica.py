@@ -78,6 +78,7 @@ class SemanticAnalyzer:
                         f"[SEMÁNTICO] tan({arg}) no está definida (cos ≈ 0)"
                     )
                 return math.tan(math.radians(arg))
+            if node.func == "atan": return math.degrees(math.atan(arg))
             if node.func == "abs": return abs(arg)
             raise SemanticError(f"[SEMÁNTICO] Función no reconocida: {node.func}")
 

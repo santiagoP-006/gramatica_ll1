@@ -1,0 +1,5 @@
+a = atan(1);
+b = Atan(0) + 5;
+c = tan(atan(1));
+atan(1) * 2;
+d = atan(-1);
