@@ -1,0 +1,3 @@
+# Diapositiva 6: no ambigua pero NO es LL(1)
+A -> B uno | dos
+B -> dos

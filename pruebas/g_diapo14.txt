@@ -1,0 +1,3 @@
+# Diapositivas 14 a 17: analizador de ejemplo
+A -> B uno | dos
+B -> tres | cuatro A

@@ -7,10 +7,10 @@ import re
 # Orden importa: palabras reservadas ANTES que ID
 TOKEN_SPEC = [
     ("NUM",       r'\d+(\.\d+)?'),
-    ("ABS",       r'\babs\b'),
-    ("SIN",       r'\bsin\b'),
-    ("COS",       r'\bcos\b'),
-    ("TAN",       r'\btan\b'),
+    ("ABS",       r'(?i:\babs\b)'),
+    ("SIN",       r'(?i:\bsin\b)'),
+    ("COS",       r'(?i:\bcos\b)'),
+    ("TAN",       r'(?i:\btan\b)'),
     ("ID",        r'[a-zA-Z_]\w*'),
     ("ASIG",      r'='),
     ("PLUS",      r'\+'),
@@ -59,6 +59,8 @@ def tokenize(source_code: str) -> list:
                 f"[LÉXICO] Carácter no reconocido '{value}' en línea {line_num}"
             )
         else:
+            if kind in ("ABS", "SIN", "COS", "TAN"):
+                value = value.lower()          # Sin, SIN, sin -> sin
             tokens.append(Token(kind, value, line_num))
 
     tokens.append(Token("$", "$", line_num))  # Marca de fin de entrada

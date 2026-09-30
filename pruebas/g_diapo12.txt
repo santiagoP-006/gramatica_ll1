@@ -1,0 +1,4 @@
+# Diapositiva 12: factorizar por la izquierda
+I -> if E then I endif | if E then I else I endif | otra
+E -> cond
+

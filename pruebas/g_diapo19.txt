@@ -1,0 +1,3 @@
+# Diapositiva 19: ejercicio de aplicación (recursión izquierda)
+S -> S uno | A
+A -> dos A | tres
