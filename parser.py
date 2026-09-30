@@ -1,6 +1,6 @@
 # parser.py
-# Analizador sintáctico LL(1) descendente recursivo
-# Construye el AST a partir de la lista de tokens del lexer
+# Analizador sintáctico LL(1) ESTRICTO — un solo token de anticipación
+# Corrección: parse_sentencia usa resto_sent en lugar de peek_next()
 
 from lexer import Token, LexerError
 
@@ -43,7 +43,7 @@ class ProgramNode:
         self.statements = statements
     def __repr__(self): return f"Program({self.statements})"
 
-# ── Parser ────────────────────────────────────────────────────
+# ── Parser LL(1) estricto ─────────────────────────────────────
 class Parser:
     def __init__(self, tokens: list):
         self.tokens = tokens
@@ -52,17 +52,14 @@ class Parser:
     def current(self) -> Token:
         return self.tokens[self.pos]
 
-    def peek_next(self) -> Token:
-        if self.pos + 1 < len(self.tokens):
-            return self.tokens[self.pos + 1]
-        return Token("$", "$", -1)
-
+    # peek_next() eliminado — ya no se usa
     def consume(self, expected_type: str) -> Token:
         tok = self.current()
         if tok.type != expected_type:
             raise ParseError(
                 f"[SINTÁCTICO] Se esperaba '{expected_type}' "
-                f"pero se encontró '{tok.type}' ('{tok.value}') en línea {tok.line}"
+                f"pero se encontró '{tok.type}' ('{tok.value}') "
+                f"en línea {tok.line}"
             )
         self.pos += 1
         return tok
@@ -70,23 +67,85 @@ class Parser:
     # programa → sentencia programa | ε
     def parse_programa(self) -> ProgramNode:
         stmts = []
-        start_types = {"ID", "NUM", "MINUS", "ABS", "SIN", "COS", "TAN", "LPAREN"}
-        while self.current().type in start_types:
+        start = {"ID", "NUM", "MINUS", "ABS", "SIN", "COS", "TAN", "LPAREN"}
+        while self.current().type in start:
             stmts.append(self.parse_sentencia())
         return ProgramNode(stmts)
 
-    # sentencia → ID = expr ; | expr ;
+    # sentencia → ID resto_sent ;
+    #           | NUM    term' expr' ;
+    #           | MINUS  factor term' expr' ;
+    #           | ABS  ( expr ) term' expr' ;
+    #           | SIN  ( expr ) term' expr' ;
+    #           | COS  ( expr ) term' expr' ;
+    #           | TAN  ( expr ) term' expr' ;
+    #           | ( expr ) term' expr' ;
     def parse_sentencia(self):
-        if self.current().type == "ID" and self.peek_next().type == "ASIG":
+        tok = self.current()
+
+        if tok.type == "ID":
             name = self.consume("ID").value
+            # resto_sent: un solo token decide — ASIG o cualquier otra cosa
+            node = self.parse_resto_sent(name)
+            self.consume("SEMICOLON")
+            return node
+
+        elif tok.type == "NUM":
+            left = NumNode(self.consume("NUM").value)
+            left = self.parse_term_prime(left)
+            node = self.parse_expr_prime(left)
+            self.consume("SEMICOLON")
+            return node
+
+        elif tok.type == "MINUS":
+            self.consume("MINUS")
+            operand = self.parse_factor()
+            left    = UnaryOpNode("-", operand)
+            left    = self.parse_term_prime(left)
+            node    = self.parse_expr_prime(left)
+            self.consume("SEMICOLON")
+            return node
+
+        elif tok.type in ("ABS", "SIN", "COS", "TAN"):
+            func = self.consume(tok.type).value
+            self.consume("LPAREN")
+            arg  = self.parse_expr()
+            self.consume("RPAREN")
+            left = FuncNode(func, arg)
+            left = self.parse_term_prime(left)
+            node = self.parse_expr_prime(left)
+            self.consume("SEMICOLON")
+            return node
+
+        elif tok.type == "LPAREN":
+            self.consume("LPAREN")
+            inner = self.parse_expr()
+            self.consume("RPAREN")
+            left  = self.parse_term_prime(inner)
+            node  = self.parse_expr_prime(left)
+            self.consume("SEMICOLON")
+            return node
+
+        else:
+            raise ParseError(
+                f"[SINTÁCTICO] Inicio de sentencia inválido: "
+                f"'{tok.type}' ('{tok.value}') en línea {tok.line}"
+            )
+
+    # resto_sent → ASIG expr          (asignación)
+    #            | term' expr'         (expresión que empezó con ID)
+    # Decisión con UN solo token: si es ASIG → asignación, si no → expresión
+    def parse_resto_sent(self, id_name: str):
+        if self.current().type == "ASIG":
+            # M[resto_sent, ASIG] → ASIG expr
             self.consume("ASIG")
             expr = self.parse_expr()
-            self.consume("SEMICOLON")
-            return AssignNode(name, expr)
+            return AssignNode(id_name, expr)
         else:
-            expr = self.parse_expr()
-            self.consume("SEMICOLON")
-            return expr
+            # M[resto_sent, {MULT,DIV,MOD,PLUS,MINUS,SEMICOLON}] → term' expr'
+            # El ID ya fue consumido; lo envolvemos como IdNode y continuamos
+            left = self.parse_term_prime(IdNode(id_name))
+            return self.parse_expr_prime(left)
 
     # expr → term expr'
     def parse_expr(self):
@@ -98,13 +157,11 @@ class Parser:
         if self.current().type == "PLUS":
             self.consume("PLUS")
             right = self.parse_term()
-            node  = BinOpNode("+", left, right)
-            return self.parse_expr_prime(node)
+            return self.parse_expr_prime(BinOpNode("+", left, right))
         elif self.current().type == "MINUS":
             self.consume("MINUS")
             right = self.parse_term()
-            node  = BinOpNode("-", left, right)
-            return self.parse_expr_prime(node)
+            return self.parse_expr_prime(BinOpNode("-", left, right))
         return left  # ε
 
     # term → factor term'
@@ -117,21 +174,19 @@ class Parser:
         if self.current().type == "MULT":
             self.consume("MULT")
             right = self.parse_factor()
-            node  = BinOpNode("*", left, right)
-            return self.parse_term_prime(node)
+            return self.parse_term_prime(BinOpNode("*", left, right))
         elif self.current().type == "DIV":
             self.consume("DIV")
             right = self.parse_factor()
-            node  = BinOpNode("/", left, right)
-            return self.parse_term_prime(node)
+            return self.parse_term_prime(BinOpNode("/", left, right))
         elif self.current().type == "MOD":
             self.consume("MOD")
             right = self.parse_factor()
-            node  = BinOpNode("%", left, right)
-            return self.parse_term_prime(node)
+            return self.parse_term_prime(BinOpNode("%", left, right))
         return left  # ε
 
-    # factor → ( expr ) | - factor | abs(expr) | sin(expr) | cos(expr) | tan(expr) | NUM | ID
+    # factor → ( expr ) | - factor | abs(expr) | sin(expr)
+    #        | cos(expr) | tan(expr) | NUM | ID
     def parse_factor(self):
         tok = self.current()
 
@@ -143,8 +198,7 @@ class Parser:
 
         elif tok.type == "MINUS":
             self.consume("MINUS")
-            operand = self.parse_factor()
-            return UnaryOpNode("-", operand)
+            return UnaryOpNode("-", self.parse_factor())
 
         elif tok.type in ("ABS", "SIN", "COS", "TAN"):
             func = self.consume(tok.type).value
@@ -154,17 +208,15 @@ class Parser:
             return FuncNode(func, arg)
 
         elif tok.type == "NUM":
-            self.consume("NUM")
-            return NumNode(tok.value)
+            return NumNode(self.consume("NUM").value)
 
         elif tok.type == "ID":
-            self.consume("ID")
-            return IdNode(tok.value)
+            return IdNode(self.consume("ID").value)
 
         else:
             raise ParseError(
-                f"[SINTÁCTICO] Token inesperado '{tok.type}' ('{tok.value}') "
-                f"en línea {tok.line}"
+                f"[SINTÁCTICO] Token inesperado en factor: "
+                f"'{tok.type}' ('{tok.value}') en línea {tok.line}"
             )
 
     def parse(self) -> ProgramNode:
